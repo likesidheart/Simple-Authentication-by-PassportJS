@@ -9,8 +9,8 @@ var express = require("express"),
 mongoose.connect("mongodb://localhost/auth_demo");
 var app = express();
 
-app.set("view engine","ejs");
-app.use (bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({ extended: true }));
 //initializing express session
 app.use(require("express-session")({
     secret: "Node JS is Best!",
@@ -19,6 +19,7 @@ app.use(require("express-session")({
 }));
 
 //to read the sessions and encode + decode the data
+passport.use(new LocalStrategy(User.authenticate()));
 //encoding
 passport.serializeUser(User.serializeUser());
 //decoding
@@ -32,7 +33,7 @@ app.use(passport.session());
 // ROUTES
 //************************* */
 
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
     res.render("home");
 });
 
@@ -42,24 +43,39 @@ app.get("/loggedin", (req, res) => {
 
 //Auth Routes
 //show sign up form
-app.get("/register", function(req, res){
+app.get("/register", function (req, res) {
     res.render("register");
 });
 
-//Post up form
-app.post("/register", function(req, res){
-     req.body.username
-     req.body.password
-     User.register(new User({username: req.body.username}), req.body.password, function(err, user){
-        if(err) {
+//handling sign up form
+app.post("/register", function (req, res) {
+    req.body.username
+    req.body.password
+    User.register(new User({ username: req.body.username }), req.body.password, function (err, user) {
+        if (err) {
             console.log(err);
             return res.render('register');
         } else {
-            passport.authenticate("local")(req, res, function(){
+            passport.authenticate("local")(req, res, function () {
                 res.redirect("/loggedin");
             })
         }
-     });
+    });
+});
+
+//show Log in form
+app.get("/login", function (req, res) {
+    res.render("login");
+});
+//login logic
+app.post("/login", passport.authenticate("local", {
+    //middleware: run between two routes loggedin and login
+    successRedirect: "/loggedin",
+    failureRedirect: "/login"
+}), function (req, res) {
+    if (err) {
+        console.log(err);
+    }
 });
 
 //listening port
