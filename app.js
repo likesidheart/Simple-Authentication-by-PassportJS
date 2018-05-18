@@ -37,7 +37,7 @@ app.get("/", function (req, res) {
     res.render("home");
 });
 
-app.get("/loggedin", (req, res) => {
+app.get("/loggedin", isLoggedIn, (req, res) => {
     res.render("loggedin");
 });
 
@@ -46,7 +46,6 @@ app.get("/loggedin", (req, res) => {
 app.get("/register", function (req, res) {
     res.render("register");
 });
-
 //handling sign up form
 app.post("/register", function (req, res) {
     req.body.username
@@ -77,6 +76,19 @@ app.post("/login", passport.authenticate("local", {
         console.log(err);
     }
 });
+
+//logout route
+app.get("/logout", function (req, res) {
+    req.logout();
+    res.redirect("/");
+});
+//problem solved: "/loggedin" route can access only if you are loggedin
+function isLoggedIn(req,res,next) {
+    if(req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect("/login");
+}
 
 //listening port
 app.listen("3002", function () {
