@@ -10,7 +10,7 @@ mongoose.connect("mongodb://localhost/auth_demo");
 var app = express();
 
 app.set("view engine","ejs");
-
+app.use (bodyParser.urlencoded({extended: true}));
 //initializing express session
 app.use(require("express-session")({
     secret: "Node JS is Best!",
@@ -28,12 +28,38 @@ passport.deserializeUser(User.deserializeUser());
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get("/", function(req, res){
+//************************* */
+// ROUTES
+//************************* */
+
+app.get("/", function(req, res) {
     res.render("home");
 });
 
 app.get("/loggedin", (req, res) => {
     res.render("loggedin");
+});
+
+//Auth Routes
+//show sign up form
+app.get("/register", function(req, res){
+    res.render("register");
+});
+
+//Post up form
+app.post("/register", function(req, res){
+     req.body.username
+     req.body.password
+     User.register(new User({username: req.body.username}), req.body.password, function(err, user){
+        if(err) {
+            console.log(err);
+            return res.render('register');
+        } else {
+            passport.authenticate("local")(req, res, function(){
+                res.redirect("/loggedin");
+            })
+        }
+     });
 });
 
 //listening port
